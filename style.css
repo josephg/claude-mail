@@ -1,0 +1,371 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    color: #333;
+    background: #f5f5f5;
+}
+
+/* Login */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.login-container h1 {
+    margin-bottom: 24px;
+    font-size: 24px;
+}
+
+.login-form {
+    background: #fff;
+    padding: 32px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 360px;
+}
+
+.form-field {
+    margin-bottom: 16px;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.form-field input,
+.form-field textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-field textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    background: #0066cc;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.login-form button:hover {
+    background: #0052a3;
+}
+
+.login-form button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+.error-message {
+    margin-top: 12px;
+    padding: 8px;
+    background: #fee;
+    color: #c00;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* Mail layout */
+.mail-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.mail-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.compose-btn {
+    padding: 8px 16px;
+    background: #0066cc;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.compose-btn:hover {
+    background: #0052a3;
+}
+
+.mail-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.mail-sidebar {
+    width: 250px;
+    min-width: 250px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+}
+
+.mail-main {
+    flex: 1;
+    overflow-y: auto;
+    background: #fff;
+}
+
+/* Mailbox sidebar */
+.mailbox-list {
+    padding: 8px 0;
+}
+
+.mailbox-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mailbox-item:hover {
+    background: #f0f0f0;
+}
+
+.mailbox-item.active {
+    background: #e3f0ff;
+    font-weight: 600;
+}
+
+.mailbox-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.unread-badge {
+    background: #0066cc;
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+/* Email list */
+.email-list {
+    padding: 0;
+}
+
+.email-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    gap: 12px;
+}
+
+.email-row:hover {
+    background: #f8f8f8;
+}
+
+.email-row.unread {
+    font-weight: 700;
+    background: #fafafa;
+}
+
+.email-from {
+    width: 180px;
+    min-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.email-subject-preview {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.email-subject {
+    color: #333;
+}
+
+.email-preview {
+    color: #888;
+}
+
+.attachment-icon {
+    color: #666;
+    font-size: 12px;
+}
+
+.email-date {
+    width: 90px;
+    min-width: 90px;
+    text-align: right;
+    color: #888;
+    font-size: 13px;
+}
+
+/* Thread view */
+.thread-view {
+    padding: 16px;
+}
+
+.thread-toolbar {
+    margin-bottom: 16px;
+}
+
+.thread-toolbar button {
+    padding: 6px 12px;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.thread-toolbar button:hover {
+    background: #ddd;
+}
+
+.email-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.email-card-header {
+    padding: 12px 16px;
+    background: #f8f8f8;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.email-card-body {
+    padding: 16px;
+}
+
+.email-card-body pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.email-card-actions {
+    padding: 8px 16px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+
+.email-card-actions button {
+    padding: 6px 12px;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.email-card-actions button:hover {
+    background: #ddd;
+}
+
+/* Compose */
+.compose-view {
+    padding: 16px;
+    max-width: 800px;
+}
+
+.compose-view h2 {
+    margin-bottom: 16px;
+}
+
+.compose-inline {
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.compose-form .form-field {
+    margin-bottom: 12px;
+}
+
+.compose-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.compose-actions button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.compose-actions button[type="submit"] {
+    background: #0066cc;
+    color: #fff;
+    border: none;
+}
+
+.compose-actions button[type="submit"]:hover {
+    background: #0052a3;
+}
+
+.compose-actions button[type="submit"]:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+.compose-actions button[type="button"] {
+    background: #eee;
+    border: 1px solid #ccc;
+}
+
+.compose-actions button[type="button"]:hover {
+    background: #ddd;
+}
+
+/* Loading / Empty states */
+.loading,
+.empty {
+    padding: 24px;
+    text-align: center;
+    color: #888;
+}

@@ -1,0 +1,9 @@
+[build]
+target = "index.html"
+
+[watch]
+watch = ["src", "jmap-client/src", "index.html", "style.css"]
+
+[serve]
+address = "127.0.0.1"
+port = 8080

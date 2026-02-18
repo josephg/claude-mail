@@ -1,0 +1,16 @@
+[workspace]
+members = ["jmap-client"]
+
+[package]
+name = "jmap-webmail"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+jmap-client = { path = "./jmap-client" }
+leptos = { version = "0.7", features = ["csr"] }
+leptos_router = { version = "0.7" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+console_error_panic_hook = "0.1"
+web-sys = { version = "0.3", features = ["Window", "Location"] }
