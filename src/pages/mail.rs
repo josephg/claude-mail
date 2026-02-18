@@ -19,10 +19,16 @@ pub fn MailPage() -> impl IntoView {
         });
     };
 
+    let on_logout = move |_| {
+        state.logout();
+    };
+
     view! {
         <div class="mail-layout">
             <div class="mail-toolbar">
                 <button class="compose-btn" on:click=on_compose>"Compose"</button>
+                <div class="toolbar-spacer"></div>
+                <button class="logout-btn" on:click=on_logout>"Logout"</button>
             </div>
             <div class="mail-content">
                 <div class="mail-sidebar">

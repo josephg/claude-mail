@@ -1,8 +1,7 @@
-use crate::state::AppState;
+use crate::state::{save_credentials, AppState};
 use jmap_client::JmapClient;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use leptos_router::hooks::use_navigate;
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
@@ -13,14 +12,11 @@ pub fn LoginPage() -> impl IntoView {
     let error_msg = RwSignal::new(Option::<String>::None);
     let loading = RwSignal::new(false);
 
-    let navigate = use_navigate();
-
     let on_submit = move |ev: leptos::ev::SubmitEvent| {
         ev.prevent_default();
         let server = server_url.get();
         let user = username.get();
         let pass = password.get();
-        let navigate = navigate.clone();
 
         loading.set(true);
         error_msg.set(None);
@@ -28,11 +24,9 @@ pub fn LoginPage() -> impl IntoView {
         spawn_local(async move {
             match JmapClient::connect(&server, &user, &pass).await {
                 Ok(client) => {
-                    // Fetch mailboxes and identities
                     let mailboxes = client.get_mailboxes().await.ok().unwrap_or_default();
                     let identities = client.get_identities().await.ok().unwrap_or_default();
 
-                    // Select inbox by default
                     let inbox_id = mailboxes
                         .iter()
                         .find(|m| m.role.as_deref() == Some("inbox"))
@@ -46,7 +40,7 @@ pub fn LoginPage() -> impl IntoView {
                         state.selected_mailbox.set(Some(id));
                     }
 
-                    navigate("/mail", Default::default());
+                    save_credentials(&server, &user, &pass);
                 }
                 Err(e) => {
                     error_msg.set(Some(format!("{e}")));

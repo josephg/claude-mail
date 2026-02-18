@@ -102,6 +102,23 @@ body {
     border-bottom: 1px solid #ddd;
 }
 
+.toolbar-spacer {
+    flex: 1;
+}
+
+.logout-btn {
+    padding: 8px 16px;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-btn:hover {
+    background: #ddd;
+}
+
 .compose-btn {
     padding: 8px 16px;
     background: #0066cc;

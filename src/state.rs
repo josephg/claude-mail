@@ -1,5 +1,8 @@
 use jmap_client::{Identity, JmapClient, Mailbox};
 use leptos::prelude::*;
+use web_sys::window;
+
+const STORAGE_KEY: &str = "jmap_credentials";
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum MailView {
@@ -36,5 +39,44 @@ impl AppState {
             reply_to_email: RwSignal::new(None),
             reply_all: RwSignal::new(false),
         }
+    }
+
+    pub fn logout(&self) {
+        self.client.set(None);
+        self.mailboxes.set(vec![]);
+        self.selected_mailbox.set(None);
+        self.current_view.set(MailView::EmailList);
+        self.identities.set(vec![]);
+        self.reply_to_email.set(None);
+        self.reply_all.set(false);
+        clear_saved_credentials();
+    }
+}
+
+pub fn save_credentials(server: &str, username: &str, password: &str) {
+    let Some(storage) = window().and_then(|w| w.local_storage().ok().flatten()) else {
+        return;
+    };
+    let json = serde_json::json!({
+        "server": server,
+        "username": username,
+        "password": password,
+    });
+    let _ = storage.set_item(STORAGE_KEY, &json.to_string());
+}
+
+pub fn load_saved_credentials() -> Option<(String, String, String)> {
+    let storage = window().and_then(|w| w.local_storage().ok().flatten())?;
+    let raw = storage.get_item(STORAGE_KEY).ok().flatten()?;
+    let v: serde_json::Value = serde_json::from_str(&raw).ok()?;
+    let server = v["server"].as_str()?.to_string();
+    let username = v["username"].as_str()?.to_string();
+    let password = v["password"].as_str()?.to_string();
+    Some((server, username, password))
+}
+
+pub fn clear_saved_credentials() {
+    if let Some(storage) = window().and_then(|w| w.local_storage().ok().flatten()) {
+        let _ = storage.remove_item(STORAGE_KEY);
     }
 }
