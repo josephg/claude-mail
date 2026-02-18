@@ -24,7 +24,8 @@ pub fn LoginPage() -> impl IntoView {
         spawn_local(async move {
             match JmapClient::connect(&server, &user, &pass).await {
                 Ok(client) => {
-                    let mailboxes = client.get_mailboxes().await.ok().unwrap_or_default();
+                    let (mailboxes, mailbox_state) =
+                        client.get_mailboxes().await.ok().unwrap_or_default();
                     let identities = client.get_identities().await.ok().unwrap_or_default();
 
                     let inbox_id = mailboxes
@@ -33,6 +34,7 @@ pub fn LoginPage() -> impl IntoView {
                         .map(|m| m.id.clone());
 
                     state.mailboxes.set(mailboxes);
+                    state.mailbox_state.set(Some(mailbox_state));
                     state.identities.set(identities);
                     state.client.set(Some(client));
 
@@ -41,6 +43,7 @@ pub fn LoginPage() -> impl IntoView {
                     }
 
                     save_credentials(&server, &user, &pass);
+                    crate::eventsource::start_event_source(state);
                 }
                 Err(e) => {
                     error_msg.set(Some(format!("{e}")));

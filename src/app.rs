@@ -13,7 +13,8 @@ pub fn App() -> impl IntoView {
     if let Some((server, username, password)) = load_saved_credentials() {
         spawn_local(async move {
             if let Ok(client) = JmapClient::connect(&server, &username, &password).await {
-                let mailboxes = client.get_mailboxes().await.ok().unwrap_or_default();
+                let (mailboxes, mailbox_state) =
+                    client.get_mailboxes().await.ok().unwrap_or_default();
                 let identities = client.get_identities().await.ok().unwrap_or_default();
                 let inbox_id = mailboxes
                     .iter()
@@ -21,12 +22,15 @@ pub fn App() -> impl IntoView {
                     .map(|m| m.id.clone());
 
                 state.mailboxes.set(mailboxes);
+                state.mailbox_state.set(Some(mailbox_state));
                 state.identities.set(identities);
                 state.client.set(Some(client));
 
                 if let Some(id) = inbox_id {
                     state.selected_mailbox.set(Some(id));
                 }
+
+                crate::eventsource::start_event_source(state);
             }
         });
     }

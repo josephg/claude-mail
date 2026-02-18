@@ -26,6 +26,10 @@ pub struct AppState {
     pub identities: RwSignal<Vec<Identity>>,
     pub reply_to_email: RwSignal<Option<String>>,
     pub reply_all: RwSignal<bool>,
+    pub email_state: RwSignal<Option<String>>,
+    pub mailbox_state: RwSignal<Option<String>>,
+    pub email_refresh_trigger: RwSignal<u64>,
+    pub sse_abort: StoredValue<Option<web_sys::AbortController>, LocalStorage>,
 }
 
 impl AppState {
@@ -38,10 +42,21 @@ impl AppState {
             identities: RwSignal::new(vec![]),
             reply_to_email: RwSignal::new(None),
             reply_all: RwSignal::new(false),
+            email_state: RwSignal::new(None),
+            mailbox_state: RwSignal::new(None),
+            email_refresh_trigger: RwSignal::new(0),
+            sse_abort: StoredValue::new_local(None),
         }
     }
 
     pub fn logout(&self) {
+        // Abort SSE connection before clearing client
+        self.sse_abort.with_value(|v| {
+            if let Some(controller) = v {
+                controller.abort();
+            }
+        });
+        self.sse_abort.set_value(None);
         self.client.set(None);
         self.mailboxes.set(vec![]);
         self.selected_mailbox.set(None);
@@ -49,6 +64,9 @@ impl AppState {
         self.identities.set(vec![]);
         self.reply_to_email.set(None);
         self.reply_all.set(false);
+        self.email_state.set(None);
+        self.mailbox_state.set(None);
+        self.email_refresh_trigger.set(0);
         clear_saved_credentials();
     }
 }

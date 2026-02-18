@@ -13,6 +13,8 @@ pub struct Session {
     pub api_url: String,
     pub download_url: String,
     pub upload_url: String,
+    #[serde(default)]
+    pub event_source_url: Option<String>,
     pub state: String,
 }
 
@@ -243,4 +245,28 @@ pub struct SetError {
     pub type_: String,
     #[serde(default)]
     pub description: Option<String>,
+}
+
+// ── Push / EventSource Types ──
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct StateChange {
+    #[serde(rename = "@type")]
+    pub type_: String,
+    pub changed: HashMap<String, HashMap<String, String>>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangesResponse {
+    pub account_id: String,
+    pub old_state: String,
+    pub new_state: String,
+    pub has_more_changes: bool,
+    #[serde(default)]
+    pub created: Vec<String>,
+    #[serde(default)]
+    pub updated: Vec<String>,
+    #[serde(default)]
+    pub destroyed: Vec<String>,
 }

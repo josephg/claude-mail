@@ -25,4 +25,7 @@ pub enum JmapError {
 
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
+
+    #[error("EventSource error: {0}")]
+    EventSource(String),
 }

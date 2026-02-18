@@ -21,6 +21,7 @@ pub fn EmailList() -> impl IntoView {
     let emails = LocalResource::new(move || {
         let mailbox_id = state.selected_mailbox.get();
         let client = state.client.get();
+        let _refresh = state.email_refresh_trigger.get();
         async move {
             let (Some(client), Some(mailbox_id)) = (client, mailbox_id) else {
                 return Vec::<Email>::new();
@@ -33,11 +34,13 @@ pub fn EmailList() -> impl IntoView {
             if ids.is_empty() {
                 return vec![];
             }
-            client
+            let (emails, email_state) = client
                 .get_emails(&ids, LIST_PROPERTIES)
                 .await
                 .ok()
-                .unwrap_or_default()
+                .unwrap_or_default();
+            state.email_state.set(Some(email_state));
+            emails
         }
     });
 

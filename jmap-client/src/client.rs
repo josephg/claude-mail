@@ -78,6 +78,10 @@ impl JmapClient {
         &self.account_id
     }
 
+    pub fn auth_header(&self) -> &str {
+        &self.auth_header
+    }
+
     /// Send a raw JMAP API request.
     pub async fn api_request(
         &self,
@@ -118,8 +122,8 @@ impl JmapClient {
         Ok(jmap_response)
     }
 
-    /// Get all mailboxes for the account.
-    pub async fn get_mailboxes(&self) -> Result<Vec<Mailbox>, JmapError> {
+    /// Get all mailboxes for the account. Returns (mailboxes, state).
+    pub async fn get_mailboxes(&self) -> Result<(Vec<Mailbox>, String), JmapError> {
         let response = self
             .api_request(vec![Invocation {
                 name: "Mailbox/get".to_string(),
@@ -131,12 +135,17 @@ impl JmapClient {
             }])
             .await?;
 
-        let list = response.method_responses[0].args["list"]
+        let args = &response.method_responses[0].args;
+        let list = args["list"]
             .as_array()
             .ok_or_else(|| JmapError::Api("Missing list in Mailbox/get response".to_string()))?;
+        let state = args["state"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
 
         let mailboxes: Vec<Mailbox> = serde_json::from_value(Value::Array(list.clone()))?;
-        Ok(mailboxes)
+        Ok((mailboxes, state))
     }
 
     /// Query emails in a mailbox, sorted by receivedAt descending.
@@ -179,14 +188,14 @@ impl JmapClient {
         Ok((ids, total))
     }
 
-    /// Get emails by IDs with specified properties.
+    /// Get emails by IDs with specified properties. Returns (emails, state).
     pub async fn get_emails(
         &self,
         ids: &[String],
         properties: &[&str],
-    ) -> Result<Vec<Email>, JmapError> {
+    ) -> Result<(Vec<Email>, String), JmapError> {
         if ids.is_empty() {
-            return Ok(vec![]);
+            return Ok((vec![], String::new()));
         }
 
         let response = self
@@ -201,12 +210,17 @@ impl JmapClient {
             }])
             .await?;
 
-        let list = response.method_responses[0].args["list"]
+        let args = &response.method_responses[0].args;
+        let list = args["list"]
             .as_array()
             .ok_or_else(|| JmapError::Api("Missing list in Email/get response".to_string()))?;
+        let state = args["state"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
 
         let emails: Vec<Email> = serde_json::from_value(Value::Array(list.clone()))?;
-        Ok(emails)
+        Ok((emails, state))
     }
 
     /// Get a thread by ID to retrieve its emailIds.
@@ -389,6 +403,48 @@ impl JmapClient {
         }
 
         Ok(())
+    }
+
+    /// Get mailbox changes since a given state.
+    pub async fn get_mailbox_changes(
+        &self,
+        since_state: &str,
+    ) -> Result<ChangesResponse, JmapError> {
+        let response = self
+            .api_request(vec![Invocation {
+                name: "Mailbox/changes".to_string(),
+                args: json!({
+                    "accountId": self.account_id,
+                    "sinceState": since_state,
+                }),
+                call_id: "mc0".to_string(),
+            }])
+            .await?;
+
+        let changes: ChangesResponse =
+            serde_json::from_value(response.method_responses[0].args.clone())?;
+        Ok(changes)
+    }
+
+    /// Get email changes since a given state.
+    pub async fn get_email_changes(
+        &self,
+        since_state: &str,
+    ) -> Result<ChangesResponse, JmapError> {
+        let response = self
+            .api_request(vec![Invocation {
+                name: "Email/changes".to_string(),
+                args: json!({
+                    "accountId": self.account_id,
+                    "sinceState": since_state,
+                }),
+                call_id: "ec0".to_string(),
+            }])
+            .await?;
+
+        let changes: ChangesResponse =
+            serde_json::from_value(response.method_responses[0].args.clone())?;
+        Ok(changes)
     }
 
     /// Find a mailbox by role (e.g. "drafts", "sent", "inbox").
