@@ -41,7 +41,6 @@ CSR-only Leptos 0.7 app. No router — view switching is signal-driven via `AppS
 
 ## Key Patterns
 
-- **No router**: View state is in signals, not URLs. This avoids state loss on page refresh (credentials are restored from localStorage).
 - **LocalResource for data fetching**: Reactive — re-fetches when tracked signals change. Returns `Option<SendWrapper<T>>`; access inner data via deref, not `.read()`.
 - **spawn_local for fire-and-forget async**: Used in event handlers and login. Router hooks like `use_navigate` must be called during component setup (synchronous), not inside `spawn_local`.
 - **into_any() for conditional rendering**: Required when match arms return different concrete view types.

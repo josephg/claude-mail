@@ -2,10 +2,13 @@ use crate::state::{save_credentials, AppState};
 use jmap_client::JmapClient;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_router::hooks::use_navigate;
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
     let state = use_context::<AppState>().expect("AppState to be provided");
+    let navigate = use_navigate();
+
     let server_url = RwSignal::new(String::new());
     let username = RwSignal::new(String::new());
     let password = RwSignal::new(String::new());
@@ -17,6 +20,7 @@ pub fn LoginPage() -> impl IntoView {
         let server = server_url.get();
         let user = username.get();
         let pass = password.get();
+        let navigate = navigate.clone();
 
         loading.set(true);
         error_msg.set(None);
@@ -28,22 +32,15 @@ pub fn LoginPage() -> impl IntoView {
                         client.get_mailboxes().await.ok().unwrap_or_default();
                     let identities = client.get_identities().await.ok().unwrap_or_default();
 
-                    let inbox_id = mailboxes
-                        .iter()
-                        .find(|m| m.role.as_deref() == Some("inbox"))
-                        .map(|m| m.id.clone());
-
                     state.mailboxes.set(mailboxes);
                     state.mailbox_state.set(Some(mailbox_state));
                     state.identities.set(identities);
                     state.client.set(Some(client));
 
-                    if let Some(id) = inbox_id {
-                        state.selected_mailbox.set(Some(id));
-                    }
-
                     save_credentials(&server, &user, &pass);
                     crate::eventsource::start_event_source(state);
+
+                    navigate("/mail/inbox", Default::default());
                 }
                 Err(e) => {
                     error_msg.set(Some(format!("{e}")));

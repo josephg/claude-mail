@@ -1,42 +1,48 @@
-use crate::state::{AppState, MailView};
+use crate::router::mailbox_id_to_slug;
+use crate::state::AppState;
 use jmap_client::EmailAddress;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_router::hooks::use_navigate;
 
 /// Full-pane compose view for new emails.
 #[component]
 pub fn ComposeView() -> impl IntoView {
     let state = use_context::<AppState>().expect("AppState to be provided");
-
-    // Pre-fill from current_view state
-    let (init_to, init_cc, init_bcc, init_subject, init_body) = match state.current_view.get() {
-        MailView::Compose {
-            to,
-            cc,
-            bcc,
-            subject,
-            body,
-        } => (to, cc, bcc, subject, body),
-        _ => Default::default(),
-    };
+    let navigate = use_navigate();
+    let navigate2 = navigate.clone();
 
     let on_cancel = move |_| {
-        state.current_view.set(MailView::EmailList);
+        let mailboxes = state.mailboxes.get();
+        let slug = state
+            .selected_mailbox
+            .get()
+            .as_deref()
+            .map(|id| mailbox_id_to_slug(&mailboxes, id))
+            .unwrap_or_else(|| "inbox".to_string());
+        navigate(&format!("/mail/{slug}"), Default::default());
     };
 
     let on_sent = move || {
-        state.current_view.set(MailView::EmailList);
+        let mailboxes = state.mailboxes.get();
+        let slug = state
+            .selected_mailbox
+            .get()
+            .as_deref()
+            .map(|id| mailbox_id_to_slug(&mailboxes, id))
+            .unwrap_or_else(|| "inbox".to_string());
+        navigate2(&format!("/mail/{slug}"), Default::default());
     };
 
     view! {
         <div class="compose-view">
             <h2>"New Message"</h2>
             <ComposeForm
-                initial_to=init_to
-                initial_cc=init_cc
-                initial_bcc=init_bcc
-                initial_subject=init_subject
-                initial_body=init_body
+                initial_to=String::new()
+                initial_cc=String::new()
+                initial_bcc=String::new()
+                initial_subject=String::new()
+                initial_body=String::new()
                 on_cancel=on_cancel
                 on_sent=on_sent
             />

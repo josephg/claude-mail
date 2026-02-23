@@ -1,6 +1,8 @@
-use crate::state::{AppState, MailView};
+use crate::router::mailbox_id_to_slug;
+use crate::state::AppState;
 use jmap_client::Mailbox;
 use leptos::prelude::*;
+use leptos_router::hooks::use_navigate;
 
 fn role_sort_order(role: Option<&str>) -> u32 {
     match role {
@@ -39,6 +41,7 @@ fn flatten_tree(mailboxes: &[Mailbox], parent_id: Option<&str>, depth: u32) -> V
 #[component]
 pub fn MailboxSidebar() -> impl IntoView {
     let state = use_context::<AppState>().expect("AppState to be provided");
+    let navigate = use_navigate();
 
     view! {
         <div class="mailbox-list">
@@ -51,12 +54,14 @@ pub fn MailboxSidebar() -> impl IntoView {
                     let mailbox_name = mailbox.name.clone();
                     let unread = mailbox.unread_emails;
                     let padding_left = format!("{}px", depth * 16 + 8);
+                    let nav = navigate.clone();
 
                     let on_click = move |_| {
-                        state.selected_mailbox.set(Some(mailbox_id_click.clone()));
-                        state.current_view.set(MailView::EmailList);
+                        let mailboxes = state.mailboxes.get();
+                        let slug = mailbox_id_to_slug(&mailboxes, &mailbox_id_click);
                         state.reply_to_email.set(None);
                         state.reply_all.set(false);
+                        nav(&format!("/mail/{slug}"), Default::default());
                     };
 
                     view! {

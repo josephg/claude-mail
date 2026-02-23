@@ -1,17 +1,23 @@
 use crate::components::compose::ComposeInline;
-use crate::state::{AppState, MailView};
+use crate::router::mailbox_id_to_slug;
+use crate::state::AppState;
 use jmap_client::Email;
 use leptos::prelude::*;
+use leptos_router::hooks::{use_navigate, use_params_map};
 
 #[component]
-pub fn ThreadView(thread_id: String) -> impl IntoView {
+pub fn ThreadView() -> impl IntoView {
     let state = use_context::<AppState>().expect("AppState to be provided");
+    let params = use_params_map();
+    let navigate = use_navigate();
 
-    let thread_id_for_fetch = thread_id.clone();
     let emails = LocalResource::new(move || {
         let client = state.client.get();
-        let tid = thread_id_for_fetch.clone();
+        let tid = params.with(|p| p.get("thread_id").unwrap_or_default().to_string());
         async move {
+            if tid.is_empty() {
+                return Vec::<Email>::new();
+            }
             let Some(client) = client else {
                 return Vec::<Email>::new();
             };
@@ -28,8 +34,15 @@ pub fn ThreadView(thread_id: String) -> impl IntoView {
     });
 
     let on_back = move |_| {
-        state.current_view.set(MailView::EmailList);
+        let mailboxes = state.mailboxes.get();
+        let slug = state
+            .selected_mailbox
+            .get()
+            .as_deref()
+            .map(|id| mailbox_id_to_slug(&mailboxes, id))
+            .unwrap_or_else(|| "inbox".to_string());
         state.reply_to_email.set(None);
+        navigate(&format!("/mail/{slug}"), Default::default());
     };
 
     view! {

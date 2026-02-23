@@ -2,6 +2,7 @@ mod app;
 mod components;
 mod eventsource;
 mod pages;
+mod router;
 mod state;
 mod sync;
 

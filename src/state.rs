@@ -4,31 +4,18 @@ use web_sys::window;
 
 const STORAGE_KEY: &str = "jmap_credentials";
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum MailView {
-    EmailList,
-    ThreadView { thread_id: String },
-    Compose {
-        to: String,
-        cc: String,
-        bcc: String,
-        subject: String,
-        body: String,
-    },
-}
-
 #[derive(Clone, Copy)]
 pub struct AppState {
     pub client: RwSignal<Option<JmapClient>>,
     pub mailboxes: RwSignal<Vec<Mailbox>>,
     pub selected_mailbox: RwSignal<Option<String>>,
-    pub current_view: RwSignal<MailView>,
     pub identities: RwSignal<Vec<Identity>>,
     pub reply_to_email: RwSignal<Option<String>>,
     pub reply_all: RwSignal<bool>,
     pub email_state: RwSignal<Option<String>>,
     pub mailbox_state: RwSignal<Option<String>>,
     pub email_refresh_trigger: RwSignal<u64>,
+    pub auto_login_done: RwSignal<bool>,
     pub sse_abort: StoredValue<Option<web_sys::AbortController>, LocalStorage>,
 }
 
@@ -38,13 +25,13 @@ impl AppState {
             client: RwSignal::new(None),
             mailboxes: RwSignal::new(vec![]),
             selected_mailbox: RwSignal::new(None),
-            current_view: RwSignal::new(MailView::EmailList),
             identities: RwSignal::new(vec![]),
             reply_to_email: RwSignal::new(None),
             reply_all: RwSignal::new(false),
             email_state: RwSignal::new(None),
             mailbox_state: RwSignal::new(None),
             email_refresh_trigger: RwSignal::new(0),
+            auto_login_done: RwSignal::new(false),
             sse_abort: StoredValue::new_local(None),
         }
     }
@@ -60,7 +47,6 @@ impl AppState {
         self.client.set(None);
         self.mailboxes.set(vec![]);
         self.selected_mailbox.set(None);
-        self.current_view.set(MailView::EmailList);
         self.identities.set(vec![]);
         self.reply_to_email.set(None);
         self.reply_all.set(false);

@@ -149,8 +149,10 @@ body {
 
 .mail-main {
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;
     background: #fff;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Mailbox sidebar */
@@ -195,6 +197,9 @@ body {
 
 /* Email list */
 .email-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     padding: 0;
 }
 
@@ -254,6 +259,9 @@ body {
 
 /* Thread view */
 .thread-view {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     padding: 16px;
 }
 
@@ -322,6 +330,9 @@ body {
 
 /* Compose */
 .compose-view {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     padding: 16px;
     max-width: 800px;
 }
