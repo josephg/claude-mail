@@ -34,7 +34,7 @@ pub fn App() -> impl IntoView {
     }
 
     view! {
-        <Router>
+        <Router base=option_env!("BASE_URL").unwrap_or("")>
             <Routes fallback=|| view! { <Redirect path="/login"/> }>
                 <Route path=path!("/") view=|| view! { <Redirect path="/mail/inbox"/> }/>
                 <Route path=path!("/login") view=LoginPage/>
