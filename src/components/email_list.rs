@@ -4,6 +4,7 @@ use jmap_client::Email;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_navigate;
+use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 
 const LIST_PROPERTIES: &[&str] = &[
@@ -60,7 +61,13 @@ pub fn EmailList() -> impl IntoView {
             } else {
                 emails.set(new_emails);
             }
-            has_more.set((position + loaded_count) < total);
+            // Server only returns total if calculateTotal was requested.
+            // Fall back to heuristic: if we got a full page, assume more exist.
+            if total > 0 {
+                has_more.set((position + loaded_count) < total);
+            } else {
+                has_more.set(loaded_count >= PAGE_SIZE);
+            }
             loading.set(false);
         });
     };
@@ -75,22 +82,37 @@ pub fn EmailList() -> impl IntoView {
         load_page(0, false);
     });
 
-    // Scroll handler for infinite scroll
-    let on_scroll = move |ev: web_sys::Event| {
-        if loading.get_untracked() || !has_more.get_untracked() {
-            return;
+    // IntersectionObserver for infinite scroll: fires when the sentinel
+    // div at the bottom of the list scrolls into view, regardless of
+    // which ancestor element is the actual scroll container.
+    let sentinel_ref = NodeRef::<leptos::html::Div>::new();
+
+    Effect::new(move || {
+        let Some(el) = sentinel_ref.get() else { return };
+
+        let callback = Closure::<dyn FnMut(js_sys::Array)>::new(move |entries: js_sys::Array| {
+            for val in entries.iter() {
+                let entry: web_sys::IntersectionObserverEntry = val.unchecked_into();
+                if entry.is_intersecting()
+                    && !loading.get_untracked()
+                    && has_more.get_untracked()
+                {
+                    let pos = emails.with_untracked(|l| l.len() as u64);
+                    load_page(pos, true);
+                }
+            }
+        });
+
+        if let Ok(observer) =
+            web_sys::IntersectionObserver::new(callback.as_ref().unchecked_ref())
+        {
+            let _ = observer.observe(&el);
         }
-        let Some(target) = ev.target() else { return };
-        let el: web_sys::Element = target.unchecked_into();
-        let at_bottom = el.scroll_top() + el.client_height() >= el.scroll_height() - 200;
-        if at_bottom {
-            let position = emails.with_untracked(|list| list.len() as u64);
-            load_page(position, true);
-        }
-    };
+        callback.forget();
+    });
 
     view! {
-        <div class="email-list" on:scroll=on_scroll>
+        <div class="email-list">
             <For
                 each=move || emails.get()
                 key=|email| email.id.clone().unwrap_or_default()
@@ -158,6 +180,7 @@ pub fn EmailList() -> impl IntoView {
                     None
                 }
             }}
+            <div node_ref=sentinel_ref style="height: 1px;"></div>
         </div>
     }
 }
